@@ -16,7 +16,9 @@ const { Content } = await entry.render();
 ---
 
 <DefaultLayout title={entry.data.title}>
-  <span class="text-sm">Published on <FormattedDate date={entry.data.date} /></span>
+  <span class="text-sm"
+    >Published on <FormattedDate date={entry.data.date} /></span
+  >
   <h1>{entry.data.title}</h1>
   <Content />
 </DefaultLayout>

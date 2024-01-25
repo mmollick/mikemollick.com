@@ -3,10 +3,9 @@ import { Image } from "astro:assets";
 import headshot from "../headshot-default-2021.jpg";
 import LinkedInIcon from "../icons/LinkedIn.svg?raw";
 import GitHubIcon from "../icons/GitHub.svg?raw";
-import NavItem from '../components/NavItem.astro';
+import NavItem from "../components/NavItem.astro";
 const isProd = import.meta.env.PROD;
 const { title } = Astro.props.frontmatter || Astro.props;
-
 ---
 
 <html lang="en">
@@ -61,7 +60,9 @@ const { title } = Astro.props.frontmatter || Astro.props;
             />
           </a>
           <section class="flex flex-col justify-between">
-            <h1 class="text-5xl font-bold tracking-wide m-0"><a href="/">Mike Mollick</a></h1>
+            <h1 class="text-5xl font-bold tracking-wide m-0">
+              <a href="/">Mike Mollick</a>
+            </h1>
             <nav>
               <ul class="list-none flex flex-row gap-2">
                 <li><NavItem href="/journal">Journal</NavItem></li>
