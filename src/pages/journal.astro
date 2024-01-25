@@ -1,0 +1,28 @@
+---
+import { getCollection } from "astro:content";
+import DefaultLayout from "../layouts/default.astro";
+import FormattedDate from "../components/FormattedDate.astro";
+const entries = await getCollection("blog", (entry) =>
+  import.meta.env.PROD ? entry.data.isPublished : true,
+);
+---
+
+<DefaultLayout title="Journal">
+  <ul class="list-none p-0">
+    {
+      entries.map((blogPostEntry) => (
+        <li class="">
+          <span class="text-xs text-white text-opacity-60 m-0 block">
+            <FormattedDate date={blogPostEntry.data.date} />
+          </span>
+          <a
+            href={`/journal/${blogPostEntry.slug}`}
+            class="m-0 text-white active:text-opacity-75 hover:text-opacity-60"
+          >
+            {blogPostEntry.data.title}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</DefaultLayout>

@@ -1,0 +1,12 @@
+---
+interface Props {
+    href: string;
+}
+
+const { href } = Astro.props;
+
+const pathname = new URL(Astro.request.url).pathname;
+const isActive = href === '/' ? pathname === href : pathname.startsWith(href);
+---
+
+<a href={href} class:list={["text-white hover:text-opacity-95", {'text-opacity-100': isActive, 'text-opacity-80': !isActive}]}><slot /></a>
