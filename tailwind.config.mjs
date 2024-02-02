@@ -7,8 +7,8 @@ export default {
 		extend: {
 			fontFamily: {
 				sans: ["Inter", ...defaultTheme.fontFamily.sans],
-				serif: ["IBM Plex Serif", ...defaultTheme.fontFamily.serif],
-			  },
+				mono: ["Fira Code", ...defaultTheme.fontFamily.mono],
+			},
 		},
 	},
 	plugins: [
