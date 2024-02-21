@@ -13,9 +13,10 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await entry.render();
+console.log(entry);
 ---
 
-<DefaultLayout title={entry.data.title}>
+<DefaultLayout {...entry.data}>
   <span class="text-xs text-white text-opacity-60 m-0 block"
     >Published on <FormattedDate date={entry.data.date} /></span
   >

@@ -7,7 +7,10 @@ const entries = await getCollection("blog", (entry) =>
 );
 ---
 
-<DefaultLayout title="Journal">
+<DefaultLayout
+  title="Journal"
+  description="An incomplete compendium of my thoughts"
+>
   <ul class="list-none p-0">
     {
       entries.map((blogPostEntry) => (
