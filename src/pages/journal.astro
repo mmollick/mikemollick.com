@@ -13,19 +13,21 @@ const entries = await getCollection("blog", (entry) =>
 >
   <ul class="list-none p-0">
     {
-      entries.map((blogPostEntry) => (
-        <li class="">
-          <span class="text-xs text-white text-opacity-60 m-0 block">
-            <FormattedDate date={blogPostEntry.data.date} />
-          </span>
-          <a
-            href={`/journal/${blogPostEntry.slug}`}
-            class="m-0 text-white active:text-opacity-75 hover:text-opacity-60"
-          >
-            {blogPostEntry.data.title}
-          </a>
-        </li>
-      ))
+      entries
+        .sort((a, b) => b.data.date - a.data.date)
+        .map((blogPostEntry) => (
+          <li class="">
+            <span class="text-xs text-white text-opacity-60 m-0 block">
+              <FormattedDate date={blogPostEntry.data.date} />
+            </span>
+            <a
+              href={`/journal/${blogPostEntry.slug}`}
+              class="m-0 text-white active:text-opacity-75 hover:text-opacity-60"
+            >
+              {blogPostEntry.data.title}
+            </a>
+          </li>
+        ))
     }
   </ul>
 </DefaultLayout>
