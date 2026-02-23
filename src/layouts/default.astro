@@ -1,4 +1,5 @@
 ---
+import "../styles/global.css";
 import { Image } from "astro:assets";
 import headshot from "../headshot-default-2021.jpg";
 import LinkedInIcon from "../icons/LinkedIn.svg?raw";
@@ -75,7 +76,7 @@ const isArticle = date ? true : false;
           </a>
           <section class="flex flex-col justify-between">
             <h1
-              class="text-5xl font-black m-0 bg-gradient-to-r from-purple-600 via-indigo-700 to-green-600 inline-block text-transparent bg-clip-text"
+              class="text-5xl font-black m-0 bg-linear-to-r from-purple-600 via-indigo-700 to-green-600 inline-block text-transparent bg-clip-text"
             >
               <a href="/">Mike Mollick</a>
             </h1>
