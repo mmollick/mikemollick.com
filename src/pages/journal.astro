@@ -14,7 +14,7 @@ const entries = await getCollection("blog", (entry) =>
   <ul class="list-none p-0">
     {
       entries
-        .sort((a, b) => b.data.date - a.data.date)
+        .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
         .map((blogPostEntry) => (
           <li class="">
             <span class="text-xs text-white text-opacity-60 m-0 block">
