@@ -9,7 +9,7 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
 ---
 
 <div id="command-input-container" class="mt-4">
-  <div id="command-output" class="text-sm font-mono space-y-1 mb-2"></div>
+  <div id="command-output" class="text-sm font-mono space-y-0.5 mb-2"></div>
   <div class="flex flex-wrap gap-x-2 font-mono text-sm items-center">
     <span id="command-prompt">
       <span class="text-[var(--color-terminal-command)]">guest</span><span class="text-[var(--color-terminal-muted)]">@</span><span class="text-[var(--color-terminal-command)]">mikemollick.com</span><span class="text-[var(--color-terminal-muted)]">:</span><span class="text-[var(--color-terminal-link)]">{path}</span><span class="text-[var(--color-terminal-muted)]">$</span>
@@ -127,9 +127,13 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
   }
 
   function addOutput(html) {
-    const line = document.createElement('div');
-    line.innerHTML = html;
-    output.appendChild(line);
+    for (const part of html.split('\n')) {
+      const line = document.createElement('div');
+      line.style.paddingTop = '0.125rem';
+      line.style.paddingBottom = '0.125rem';
+      line.innerHTML = part;
+      output.appendChild(line);
+    }
   }
 
   function addPromptLine(cmd) {
