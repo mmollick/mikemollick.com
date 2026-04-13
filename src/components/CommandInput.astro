@@ -55,12 +55,12 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
     help: () => {
       return [
         '<span style="color: var(--color-terminal-muted)">Available commands:</span>',
-        '  <span style="color: var(--color-terminal-command)">home</span>               <span style="color: var(--color-terminal-muted)">- go to home page</span>',
-        '  <span style="color: var(--color-terminal-command)">journal</span>            <span style="color: var(--color-terminal-muted)">- read my writing</span>',
-        '  <span style="color: var(--color-terminal-command)">journal &lt;slug&gt;</span>    <span style="color: var(--color-terminal-muted)">- read a blog post</span>',
-        '  <span style="color: var(--color-terminal-command)">github</span>             <span style="color: var(--color-terminal-muted)">- view my code</span>',
-        '  <span style="color: var(--color-terminal-command)">linkedin</span>      <span style="color: var(--color-terminal-muted)">- connect with me</span>',
-        '  <span style="color: var(--color-terminal-command)">clear</span>         <span style="color: var(--color-terminal-muted)">- clear terminal output</span>',
+        '  <span style="color: var(--color-terminal-command)">home</span>             <span style="color: var(--color-terminal-muted)">- go to home page</span>',
+        '  <span style="color: var(--color-terminal-command)">journal</span>          <span style="color: var(--color-terminal-muted)">- read my writing</span>',
+        '  <span style="color: var(--color-terminal-command)">journal &lt;slug&gt;</span>  <span style="color: var(--color-terminal-muted)">- read a blog post</span>',
+        '  <span style="color: var(--color-terminal-command)">github</span>           <span style="color: var(--color-terminal-muted)">- view my code</span>',
+        '  <span style="color: var(--color-terminal-command)">linkedin</span>         <span style="color: var(--color-terminal-muted)">- connect with me</span>',
+        '  <span style="color: var(--color-terminal-command)">clear</span>            <span style="color: var(--color-terminal-muted)">- clear terminal output</span>',
       ].join('\n');
     },
     home: () => { window.location.href = '/'; return null; },
@@ -74,7 +74,7 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
     journal: () => { window.location.href = '/journal'; return null; },
     'cd journal': () => { window.location.href = '/journal'; return null; },
     github: () => { window.open('https://github.com/mmollick', '_blank'); return '<span style="color: var(--color-terminal-muted)">Opening GitHub...</span>'; },
-    linkedin: () => { window.open('http://www.linkedin.com/in/michaelmollick', '_blank'); return '<span style="color: var(--color-terminal-muted)">Opening LinkedIn...</span>'; },
+    linkedin: () => { window.open('https://www.linkedin.com/in/michaelmollick', '_blank'); return '<span style="color: var(--color-terminal-muted)">Opening LinkedIn...</span>'; },
     clear: () => { output.innerHTML = ''; return null; },
     whoami: () => [
       '<span style="color: var(--color-terminal-prompt); font-weight: 600;">Mike Mollick</span> — Product Engineer &amp; Founder',
@@ -120,6 +120,10 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
       '<span style="color: var(--color-terminal-muted)">total 1</span>',
       '<span style="color: var(--color-terminal-muted)">drwxr-xr-x  mike staff</span>  <span style="color: var(--color-terminal-command)">journal/</span>',
     ].join('\n');
+  }
+
+  function esc(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   function addOutput(html) {
@@ -184,7 +188,7 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
         window.location.href = `/journal/${slug}`;
         return;
       }
-      addOutput(`<span style="color: var(--color-terminal-red)">journal: ${slug}: No such entry</span>`);
+      addOutput(`<span style="color: var(--color-terminal-red)">journal: ${esc(slug)}: No such entry</span>`);
       return;
     }
 
@@ -203,7 +207,7 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
         window.location.href = `/journal/${target}`;
         return;
       }
-      addOutput(`<span style="color: var(--color-terminal-red)">cd: ${target}: No such directory</span>`);
+      addOutput(`<span style="color: var(--color-terminal-red)">cd: ${esc(target)}: No such directory</span>`);
       return;
     }
 
@@ -214,7 +218,7 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
     }
 
     // rm -rf easter egg
-    if (lower.includes('rm') && lower.includes('-rf') || lower.includes('rm') && lower.includes('-r')) {
+    if (lower.startsWith('rm ') && (lower.includes('-rf') || lower.includes('-r'))) {
       const ua = navigator.userAgent;
       const os = /Mac/.test(ua) ? 'Macintosh HD' : /Windows/.test(ua) ? 'C:\\' : /Linux/.test(ua) ? '/' : 'disk0';
 
@@ -234,7 +238,7 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
         }
       }
     } else {
-      addOutput(`<span style="color: var(--color-terminal-red)">command not found: ${cmd}</span>`);
+      addOutput(`<span style="color: var(--color-terminal-red)">command not found: ${esc(cmd)}</span>`);
       addOutput(`<span style="color: var(--color-terminal-muted)">Type 'help' for available commands.</span>`);
     }
   });

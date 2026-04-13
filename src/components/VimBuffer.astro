@@ -2,7 +2,6 @@
 interface SlugEntry {
   slug: string;
   date: string;
-  title: string;
 }
 
 interface Props {
@@ -105,8 +104,7 @@ const dirHeader = [
   <slot name="mobile" />
 </div>
 
-<script is:inline define:vars={{ mode, filename, path }}>
-  const desktop = document.getElementById('vim-desktop');
+<script is:inline define:vars={{ mode, filename }}>
   const buffer = document.getElementById('vim-buffer');
   const statusRight = document.getElementById('vim-sl-right');
   const statusLeft = document.getElementById('vim-sl-left');
