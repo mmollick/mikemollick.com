@@ -21,7 +21,7 @@ const { Content } = await entry.render();
 <TerminalWindow
   title={entry.data.title}
   description={entry.data.description}
-  date={entry.data.date}
+  date={entry.data.date.toISOString()}
   path={`~/journal/${entry.slug}`}
   vimMode={true}
 >
