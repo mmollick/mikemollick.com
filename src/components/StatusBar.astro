@@ -1,0 +1,25 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="fixed bottom-0 left-0 right-0 bg-[var(--color-terminal-bg-alt)] border-t border-[var(--color-terminal-border)] font-mono text-xs px-4 py-1.5 flex justify-between items-center z-50">
+  <span class="text-[var(--color-terminal-muted)]">&copy; {year} Mike Mollick</span>
+  <nav class="flex gap-3">
+    <a
+      href="https://github.com/mmollick"
+      class="text-[var(--color-terminal-muted)] hover:text-[var(--color-terminal-text)] transition-colors"
+      title="GitHub Profile"
+      data-umami-event="github-button"
+      target="_blank"
+      rel="noopener"
+    >[github]</a>
+    <a
+      href="http://www.linkedin.com/in/michaelmollick"
+      class="text-[var(--color-terminal-muted)] hover:text-[var(--color-terminal-text)] transition-colors"
+      title="LinkedIn Profile"
+      data-umami-event="linkedin-button"
+      target="_blank"
+      rel="noopener"
+    >[linkedin]</a>
+  </nav>
+</footer>

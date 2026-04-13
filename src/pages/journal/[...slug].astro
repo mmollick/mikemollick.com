@@ -1,25 +1,43 @@
 ---
 import { getCollection } from "astro:content";
-import DefaultLayout from "../../layouts/default.astro";
+import TerminalWindow from "../../layouts/TerminalWindow.astro";
+import PromptLine from "../../components/PromptLine.astro";
 import FormattedDate from "../../components/FormattedDate.astro";
+import CommandInput from "../../components/CommandInput.astro";
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection("blog");
   return blogEntries.map((entry) => ({
     params: { slug: entry.slug },
-    props: { entry },
+    props: { entry, allSlugs: blogEntries.map((e) => e.slug) },
   }));
 }
 
-const { entry } = Astro.props;
+const { entry, allSlugs } = Astro.props;
 const { Content } = await entry.render();
-console.log(entry);
 ---
 
-<DefaultLayout {...entry.data}>
-  <span class="text-xs text-white text-opacity-60 m-0 block"
-    >Published on <FormattedDate date={entry.data.date} /></span
-  >
-  <h1>{entry.data.title}</h1>
-  <Content />
-</DefaultLayout>
+<TerminalWindow
+  title={entry.data.title}
+  description={entry.data.description}
+  date={entry.data.date}
+  path={`~/journal/${entry.slug}`}
+>
+  <PromptLine command={`cat ${entry.slug}.mdx`} path="~/journal" />
+
+  <div class="mt-4 mb-2 text-xs text-[var(--color-terminal-muted)]">
+    Published <FormattedDate date={entry.data.date} />
+  </div>
+
+  <article class="prose prose-invert mb-12">
+    <h1 class="!text-2xl">{entry.data.title}</h1>
+    <Content />
+  </article>
+
+  <PromptLine command="cd .." path="~/journal" />
+  <div class="text-sm mb-4">
+    <a href="/journal" class="text-[var(--color-terminal-link)] hover:underline">← back to ~/journal</a>
+  </div>
+
+  <CommandInput path="~/journal" slugs={allSlugs} currentPage="post" />
+</TerminalWindow>

@@ -1,0 +1,17 @@
+---
+interface Props {
+  variant?: "default" | "info" | "success";
+}
+
+const { variant = "default" } = Astro.props;
+
+const borderColors = {
+  default: "border-[var(--color-terminal-border)]",
+  info: "border-[var(--color-terminal-link)]",
+  success: "border-[var(--color-terminal-green)]",
+};
+---
+
+<div class={`pl-4 border-l-2 ${borderColors[variant]} my-2`}>
+  <slot />
+</div>

@@ -9,7 +9,12 @@
       "Bash(npm run build:*)",
       "Bash(npx astro build:*)",
       "Bash(npm ls:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(npx astro:*)",
+      "Bash(curl -s http://localhost:4321)",
+      "Bash(curl -s http://localhost:4321/journal/)",
+      "Bash(curl -s http://localhost:4321/journal/what-is-product-engineering/)",
+      "Bash(curl:*)"
     ]
   }
 }

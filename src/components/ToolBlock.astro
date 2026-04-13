@@ -1,0 +1,21 @@
+---
+interface Props {
+  label: string;
+  open?: boolean;
+}
+
+const { label, open = false } = Astro.props;
+---
+
+<details
+  class="my-3 border-l-2 border-[var(--color-terminal-border)] group"
+  open={open}
+>
+  <summary class="cursor-pointer text-sm font-mono text-[var(--color-terminal-muted)] hover:text-[var(--color-terminal-text)] transition-colors pl-3 py-1 list-none flex items-center gap-2">
+    <span class="text-xs transition-transform group-open:rotate-90">&#9654;</span>
+    <span>{label}</span>
+  </summary>
+  <div class="pl-6 pb-2 text-sm">
+    <slot />
+  </div>
+</details>

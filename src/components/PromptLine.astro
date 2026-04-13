@@ -1,0 +1,15 @@
+---
+interface Props {
+  command: string;
+  path?: string;
+}
+
+const { command, path = "~" } = Astro.props;
+---
+
+<div class="flex flex-wrap gap-x-2 font-mono text-sm my-2">
+  <span>
+    <span class="text-[var(--color-terminal-command)]">guest</span><span class="text-[var(--color-terminal-muted)]">@</span><span class="text-[var(--color-terminal-command)]">mikemollick.com</span><span class="text-[var(--color-terminal-muted)]">:</span><span class="text-[var(--color-terminal-link)]">{path}</span><span class="text-[var(--color-terminal-muted)]">$</span>
+  </span>
+  <span class="text-[var(--color-terminal-text)]">{command}</span>
+</div>

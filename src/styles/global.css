@@ -2,6 +2,99 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "Fira Code", monospace;
   --font-mono: "Fira Code", monospace;
+
+  --color-terminal-bg: #111111;
+  --color-terminal-bg-alt: #161b22;
+  --color-terminal-border: #30363d;
+  --color-terminal-text: #e6edf3;
+  --color-terminal-muted: #7d8590;
+  --color-terminal-prompt: #a78bfa;
+  --color-terminal-command: #7ee787;
+  --color-terminal-link: #58a6ff;
+  --color-terminal-amber: #d29922;
+  --color-terminal-red: #ff5f56;
+  --color-terminal-yellow: #ffbd2e;
+  --color-terminal-green: #27c93f;
+}
+
+/* Prose overrides for terminal aesthetic */
+.prose {
+  --tw-prose-body: var(--color-terminal-text);
+  --tw-prose-headings: var(--color-terminal-text);
+  --tw-prose-links: var(--color-terminal-link);
+  --tw-prose-bold: var(--color-terminal-text);
+  --tw-prose-code: var(--color-terminal-command);
+  --tw-prose-pre-bg: var(--color-terminal-bg-alt);
+  --tw-prose-pre-code: var(--color-terminal-text);
+  --tw-prose-quotes: var(--color-terminal-muted);
+  --tw-prose-quote-borders: var(--color-terminal-border);
+  --tw-prose-counters: var(--color-terminal-muted);
+  --tw-prose-bullets: var(--color-terminal-muted);
+  --tw-prose-hr: var(--color-terminal-border);
+  --tw-prose-th-borders: var(--color-terminal-border);
+  --tw-prose-td-borders: var(--color-terminal-border);
+  font-family: "Fira Code", monospace;
+  line-height: 1.7;
+  max-width: 75ch;
+}
+
+.prose h2::before {
+  content: "## ";
+  color: var(--color-terminal-muted);
+}
+
+.prose h3::before {
+  content: "### ";
+  color: var(--color-terminal-muted);
+}
+
+.prose blockquote {
+  border-left: 2px solid var(--color-terminal-border);
+  font-style: normal;
+}
+
+.prose blockquote p::before {
+  content: "> ";
+  color: var(--color-terminal-muted);
+}
+
+.prose pre {
+  border: 1px solid var(--color-terminal-border);
+  border-radius: 4px;
+}
+
+.prose code:not(pre code) {
+  background: var(--color-terminal-bg-alt);
+  border: 1px solid var(--color-terminal-border);
+  border-radius: 3px;
+  padding: 0.15em 0.35em;
+  font-size: 0.875em;
+}
+
+.prose code:not(pre code)::before,
+.prose code:not(pre code)::after {
+  content: none;
+}
+
+.prose a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-terminal-border);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--color-terminal-link);
+}
+
+/* Blinking cursor animation */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
 }
