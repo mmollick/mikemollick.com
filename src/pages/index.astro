@@ -3,7 +3,7 @@ import TerminalWindow from "../layouts/TerminalWindow.astro";
 import CommandNav from "../components/CommandNav.astro";
 import CommandInput from "../components/CommandInput.astro";
 import { getCollection } from "astro:content";
-import { getCCStats, fmtTokens } from "../lib/cc-stats";
+import { getCCStats, fmtTokens, getHeatmapData, buildHeatmapGrid } from "../lib/cc-stats";
 
 const entries = await getCollection("blog", (entry) =>
   import.meta.env.PROD ? entry.data.isPublished : true,
@@ -14,6 +14,8 @@ const topModel = ccStats
   ? Object.entries(ccStats.modelBreakdown).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—"
   : null;
 const statsDate = ccStats ? new Date(ccStats.asOf).toDateString() : new Date().toDateString();
+const heatmapData = getHeatmapData();
+const heatmap = heatmapData ? buildHeatmapGrid(heatmapData) : null;
 ---
 
 <TerminalWindow
@@ -95,6 +97,24 @@ const statsDate = ccStats ? new Date(ccStats.asOf).toDateString() : new Date().t
         <p class="text-[var(--color-terminal-muted)]">
           <span class="text-[var(--color-terminal-text)]">IPv4:</span>          127.0.0.1
         </p>
+      </div>
+    )}
+
+    {heatmap && (
+      <div class="mt-3 overflow-x-auto">
+        <br />
+        <pre class="text-xs font-mono whitespace-pre" style="line-height:1.2;letter-spacing:0">{heatmap.lines.map((segments, i) => (
+          <span>{segments.map(seg => (
+            <span class={
+              seg.style === "label"   ? "text-[var(--color-terminal-muted)]" :
+              seg.style === "dot"     ? "text-[#1e2d3d]" :
+              seg.style === "active1" ? "text-[#1e4a7a]" :
+              seg.style === "active2" ? "text-[#1a6bbf]" :
+              seg.style === "active3" ? "text-[#3b88e8]" :
+                                        "text-[var(--color-terminal-link)]"
+            }>{seg.text}</span>
+          ))}{i < heatmap.lines.length - 1 ? "\n" : ""}</span>
+        ))}</pre>
       </div>
     )}
   </div>
