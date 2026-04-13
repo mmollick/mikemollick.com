@@ -1,0 +1,44 @@
+---
+import TerminalWindow from "../layouts/TerminalWindow.astro";
+import PromptLine from "../components/PromptLine.astro";
+import OutputBlock from "../components/OutputBlock.astro";
+import CommandNav from "../components/CommandNav.astro";
+import CommandInput from "../components/CommandInput.astro";
+import { getCollection } from "astro:content";
+
+const entries = await getCollection("blog", (entry) =>
+  import.meta.env.PROD ? entry.data.isPublished : true,
+);
+const slugs = entries.map((e) => e.slug);
+---
+
+<TerminalWindow
+  description="Mike Mollick is a Product Engineer and Founder who has worked in startups from pre-seed through IPO."
+  path="~"
+>
+  <!-- whoami -->
+  <PromptLine command="whoami" />
+  <OutputBlock>
+    <div class="text-sm space-y-3 my-3">
+      <p class="text-[var(--color-terminal-text)]">
+        <span class="text-[var(--color-terminal-prompt)] font-semibold">Mike Mollick</span> — Product Engineer & Founder
+      </p>
+      <p class="text-[var(--color-terminal-text)]">
+        Building <a href="https://clarify.ai" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">Clarify</a>, the AI native CRM.
+      </p>
+      <p class="text-[var(--color-terminal-muted)]">
+        Previously led engineering at <a href="https://www.linkedin.com/company/syrupofficial/posts/?feedView=all" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">Syrup</a> (defunct),
+        worked with <a href="https://www.ycombinator.com/companies/truepill" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">Truepill</a> (YC17),
+        <a href="https://zoominfo.com" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">ZoomInfo</a>,
+        and co-founded <a href="https://neverbounce.com" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">NeverBounce</a> (Acq. by ZoomInfo).
+        Got my start at the digital agencies Creavos (defunct) and <a href="https://www.theformgroup.com/" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">FORM</a>.
+      </p>
+    </div>
+  </OutputBlock>
+
+  <!-- help -->
+  <PromptLine command="help" />
+  <CommandNav />
+
+  <CommandInput path="~" slugs={slugs} currentPage="home" />
+</TerminalWindow>

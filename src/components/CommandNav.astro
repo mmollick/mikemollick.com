@@ -1,0 +1,48 @@
+---
+interface Command {
+  name: string;
+  description: string;
+  href?: string;
+  external?: boolean;
+}
+
+interface Props {
+  commands?: Command[];
+}
+
+const defaultCommands: Command[] = [
+  { name: "home", description: "go to home page", href: "/" },
+  { name: "journal", description: "read my writing", href: "/journal" },
+  { name: "journal <slug>", description: "read a blog post" },
+  { name: "github", description: "view my code", href: "https://github.com/mmollick", external: true },
+  { name: "linkedin", description: "connect with me", href: "https://www.linkedin.com/in/michaelmollick", external: true },
+  { name: "clear", description: "clear terminal output" },
+];
+
+const { commands = defaultCommands } = Astro.props;
+---
+
+<div class="my-4 font-mono text-sm">
+  <p class="text-[var(--color-terminal-muted)] mb-2">Available commands:</p>
+  <div class="space-y-0.5">
+    {commands.map((cmd) =>
+      cmd.href ? (
+        <a
+          href={cmd.href}
+          class="block px-2 py-0.5 hover:bg-[var(--color-terminal-bg-alt)] rounded transition-colors group"
+          target={cmd.external ? "_blank" : undefined}
+          rel={cmd.external ? "noopener" : undefined}
+        >
+          <span class="text-[var(--color-terminal-command)]">{cmd.name.padEnd(14)}</span>
+          <span class="text-[var(--color-terminal-muted)]">- {cmd.description}</span>
+          {cmd.external && <span class="text-[var(--color-terminal-muted)] opacity-0 group-hover:opacity-100 transition-opacity"> ↗</span>}
+        </a>
+      ) : (
+        <div class="block px-2 py-0.5">
+          <span class="text-[var(--color-terminal-command)]">{cmd.name.padEnd(14)}</span>
+          <span class="text-[var(--color-terminal-muted)]">- {cmd.description}</span>
+        </div>
+      )
+    )}
+  </div>
+</div>

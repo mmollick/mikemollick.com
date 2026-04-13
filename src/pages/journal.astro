@@ -1,33 +1,72 @@
 ---
 import { getCollection } from "astro:content";
-import DefaultLayout from "../layouts/default.astro";
-import FormattedDate from "../components/FormattedDate.astro";
+import TerminalWindow from "../layouts/TerminalWindow.astro";
+import PromptLine from "../components/PromptLine.astro";
+import OutputBlock from "../components/OutputBlock.astro";
+import CommandInput from "../components/CommandInput.astro";
+import VimBuffer from "../components/VimBuffer.astro";
+
 const entries = await getCollection("blog", (entry) =>
   import.meta.env.PROD ? entry.data.isPublished : true,
 );
+
+const sortedEntries = entries.sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+function formatDate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+const slugEntries = sortedEntries.map((e) => ({
+  slug: e.slug,
+  date: formatDate(e.data.date),
+  title: e.data.title,
+}));
 ---
 
-<DefaultLayout
+<TerminalWindow
   title="Journal"
   description="An incomplete compendium of my thoughts"
+  path="~/journal"
+  vimMode={true}
 >
-  <ul class="list-none p-0">
-    {
-      entries
-        .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
-        .map((blogPostEntry) => (
-          <li class="">
-            <span class="text-xs text-white text-opacity-60 m-0 block">
-              <FormattedDate date={blogPostEntry.data.date} />
-            </span>
-            <a
-              href={`/journal/${blogPostEntry.slug}`}
-              class="m-0 text-white active:text-opacity-75 hover:text-opacity-60"
-            >
-              {blogPostEntry.data.title}
-            </a>
-          </li>
-        ))
-    }
-  </ul>
-</DefaultLayout>
+  <VimBuffer
+    mode="directory"
+    filename="journal/"
+    path="~/journal"
+    slugs={slugEntries}
+  >
+    <!-- Mobile fallback -->
+    <div slot="mobile" class="px-8 sm:px-12 pt-8 pb-16">
+      <PromptLine command="ls -la" path="~/journal" />
+      <OutputBlock>
+        <div class="text-sm my-3 font-mono overflow-x-auto">
+          <p class="text-[var(--color-terminal-muted)] mb-1">total {sortedEntries.length}</p>
+          <div class="space-y-0.5">
+            <div class="flex gap-x-4 text-[var(--color-terminal-muted)]">
+              <span class="shrink-0">drwxr-xr-x</span>
+              <span class="shrink-0">guest mikemollick.com</span>
+              <span class="shrink-0 text-[var(--color-terminal-amber)]">..</span>
+              <a href="/" class="text-[var(--color-terminal-link)] hover:underline">→ ~</a>
+            </div>
+            {sortedEntries.map((entry) => (
+              <div class="flex gap-x-4">
+                <span class="shrink-0 text-[var(--color-terminal-muted)]">-rw-r--r--</span>
+                <span class="shrink-0 text-[var(--color-terminal-muted)]">guest mikemollick.com</span>
+                <span class="shrink-0 text-[var(--color-terminal-amber)]">{formatDate(entry.data.date)}</span>
+                <a
+                  href={`/journal/${entry.slug}`}
+                  class="text-[var(--color-terminal-command)] hover:underline truncate"
+                >
+                  {entry.slug}.mdx
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </OutputBlock>
+      <CommandInput path="~/journal" slugs={sortedEntries.map((e) => e.slug)} currentPage="journal" />
+    </div>
+  </VimBuffer>
+</TerminalWindow>

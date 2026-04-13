@@ -1,0 +1,78 @@
+---
+import "../styles/global.css";
+import StatusBar from "../components/StatusBar.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  date?: string;
+  path?: string;
+  vimMode?: boolean;
+}
+
+const isProd = import.meta.env.PROD;
+const { title, description, date, path = "~", vimMode = false } = Astro.props;
+const isArticle = !!date;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title || "Mike Mollick"} />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:description" content={description} />
+    {
+      isArticle ? (
+        <>
+          <meta property="og:type" content="article" />
+          <meta property="article:published_time" content={date} />
+          <meta property="article:author" content="Mike Mollick" />
+        </>
+      ) : (
+        <meta property="og:type" content="website" />
+      )
+    }
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <title>
+      {title ? title + " | Mike Mollick" : "Mike Mollick"}
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+    {
+      isProd && (
+        <script
+          is:inline
+          defer
+          src="https://mmollick-umami.fly.dev/script.js"
+          data-website-id="362c4c16-d4b7-4070-bc88-4b8e33c32116"
+        />
+      )
+    }
+  </head>
+  <body class={`bg-[var(--color-terminal-bg)] font-mono text-[var(--color-terminal-text)] flex flex-col ${vimMode ? 'md:h-svh md:overflow-hidden min-h-svh' : 'min-h-svh'}`}>
+    {vimMode ? (
+      <main class="flex-1 flex flex-col min-h-0">
+        <slot />
+      </main>
+    ) : (
+      <div class="flex-1 flex flex-col max-w-5xl w-full px-8 sm:px-12 lg:px-24">
+        <main class="flex-1 pt-8 pb-16">
+          <slot />
+        </main>
+      </div>
+    )}
+
+    {!vimMode && <StatusBar />}
+  </body>
+</html>
