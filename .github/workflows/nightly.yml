@@ -27,3 +27,6 @@ jobs:
           git add data/claude-stats/session-stats.jsonl
           git diff --staged --quiet || git commit -m "chore: update session-stats.jsonl [skip ci]"
           git push
+
+      - name: Trigger Netlify build
+        run: curl -s -X POST ${{ secrets.NETLIFY_BUILD_HOOK }}
