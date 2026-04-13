@@ -131,6 +131,8 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
       const line = document.createElement('div');
       line.style.paddingTop = '0.125rem';
       line.style.paddingBottom = '0.125rem';
+      line.style.paddingLeft = '0.5rem';
+      line.style.paddingRight = '0.5rem';
       line.innerHTML = part;
       output.appendChild(line);
     }
