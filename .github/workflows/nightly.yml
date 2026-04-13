@@ -1,12 +1,29 @@
-name: Nightly Build
+name: Nightly Stats Update
 
 on:
   schedule:
     - cron: "0 6 * * *" # 2am ET nightly
+  workflow_dispatch:
 
 jobs:
-  trigger-netlify:
+  update-stats:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Netlify build
-        run: curl -s -X POST ${{ secrets.NETLIFY_BUILD_HOOK }}
+      - uses: actions/checkout@v4
+
+      - name: Fetch session-stats.jsonl
+        run: |
+          mkdir -p data/claude-stats
+          curl -sf \
+            -H "Authorization: Bearer ${{ secrets.STATS_GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.raw+json" \
+            "https://api.github.com/repos/mmollick/.claude-clarify/contents/session-stats.jsonl" \
+            -o data/claude-stats/session-stats.jsonl
+
+      - name: Commit updated stats
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/claude-stats/session-stats.jsonl
+          git diff --staged --quiet || git commit -m "chore: update session-stats.jsonl [skip ci]"
+          git push

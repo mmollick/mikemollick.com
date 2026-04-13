@@ -1,3 +1,0 @@
-[submodule "data/claude-stats"]
-	path = data/claude-stats
-	url = https://github.com/mmollick/.claude-clarify.git
