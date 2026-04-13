@@ -55,12 +55,12 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
     help: () => {
       return [
         '<span style="color: var(--color-terminal-muted)">Available commands:</span>',
-        '  <span style="color: var(--color-terminal-command)">home</span>             <span style="color: var(--color-terminal-muted)">- go to home page</span>',
-        '  <span style="color: var(--color-terminal-command)">journal</span>          <span style="color: var(--color-terminal-muted)">- read my writing</span>',
-        '  <span style="color: var(--color-terminal-command)">journal &lt;slug&gt;</span>  <span style="color: var(--color-terminal-muted)">- read a blog post</span>',
-        '  <span style="color: var(--color-terminal-command)">github</span>           <span style="color: var(--color-terminal-muted)">- view my code</span>',
-        '  <span style="color: var(--color-terminal-command)">linkedin</span>         <span style="color: var(--color-terminal-muted)">- connect with me</span>',
-        '  <span style="color: var(--color-terminal-command)">clear</span>            <span style="color: var(--color-terminal-muted)">- clear terminal output</span>',
+        '  <a href="/" style="color: var(--color-terminal-link)">home</a>             <span style="color: var(--color-terminal-muted)">- go to home page</span>',
+        '  <a href="/journal" style="color: var(--color-terminal-link)">journal</a>          <span style="color: var(--color-terminal-muted)">- read my writing</span>',
+        '  <span style="color: var(--color-terminal-muted)">journal &lt;slug&gt;  - read a blog post</span>',
+        '  <a href="https://github.com/mmollick" target="_blank" rel="noopener" style="color: var(--color-terminal-link)">github</a>           <span style="color: var(--color-terminal-muted)">- view my code</span>',
+        '  <a href="https://www.linkedin.com/in/michaelmollick" target="_blank" rel="noopener" style="color: var(--color-terminal-link)">linkedin</a>         <span style="color: var(--color-terminal-muted)">- connect with me</span>',
+        '  <span style="color: var(--color-terminal-muted)">clear            - clear terminal output</span>',
       ].join('\n');
     },
     home: () => { window.location.href = '/'; return null; },
