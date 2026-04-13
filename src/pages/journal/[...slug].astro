@@ -4,6 +4,7 @@ import TerminalWindow from "../../layouts/TerminalWindow.astro";
 import PromptLine from "../../components/PromptLine.astro";
 import FormattedDate from "../../components/FormattedDate.astro";
 import CommandInput from "../../components/CommandInput.astro";
+import VimBuffer from "../../components/VimBuffer.astro";
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection("blog");
@@ -22,22 +23,32 @@ const { Content } = await entry.render();
   description={entry.data.description}
   date={entry.data.date}
   path={`~/journal/${entry.slug}`}
+  vimMode={true}
 >
-  <PromptLine command={`cat ${entry.slug}.mdx`} path="~/journal" />
-
-  <div class="mt-4 mb-2 text-xs text-[var(--color-terminal-muted)]">
-    Published <FormattedDate date={entry.data.date} />
-  </div>
-
-  <article class="prose prose-invert mb-12">
-    <h1 class="!text-2xl">{entry.data.title}</h1>
+  <VimBuffer
+    mode="file"
+    filename={`${entry.slug}.mdx`}
+    path={`~/journal/${entry.slug}`}
+  >
+    <!-- File content for vim line extraction -->
+    <h1>{entry.data.title}</h1>
     <Content />
-  </article>
 
-  <PromptLine command="cd .." path="~/journal" />
-  <div class="text-sm mb-4">
-    <a href="/journal" class="text-[var(--color-terminal-link)] hover:underline">← back to ~/journal</a>
-  </div>
-
-  <CommandInput path="~/journal" slugs={allSlugs} currentPage="post" />
+    <!-- Mobile fallback -->
+    <div slot="mobile" class="px-8 sm:px-12 pt-8 pb-16">
+      <PromptLine command={`cat ${entry.slug}.mdx`} path="~/journal" />
+      <div class="mt-4 mb-2 text-xs text-[var(--color-terminal-muted)]">
+        Published <FormattedDate date={entry.data.date} />
+      </div>
+      <article class="prose prose-invert mb-12">
+        <h1 class="!text-2xl">{entry.data.title}</h1>
+        <Content />
+      </article>
+      <PromptLine command="cd .." path="~/journal" />
+      <div class="text-sm mb-4">
+        <a href="/journal" class="text-[var(--color-terminal-link)] hover:underline">← back to ~/journal</a>
+      </div>
+      <CommandInput path="~/journal" slugs={allSlugs} currentPage="post" />
+    </div>
+  </VimBuffer>
 </TerminalWindow>

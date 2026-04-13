@@ -55,10 +55,10 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
     help: () => {
       return [
         '<span style="color: var(--color-terminal-muted)">Available commands:</span>',
-        '  <span style="color: var(--color-terminal-command)">home</span>          <span style="color: var(--color-terminal-muted)">- go to home page</span>',
-        '  <span style="color: var(--color-terminal-command)">journal</span>       <span style="color: var(--color-terminal-muted)">- read my writing</span>',
-        '  <span style="color: var(--color-terminal-command)">cat &lt;slug&gt;</span>    <span style="color: var(--color-terminal-muted)">- read a blog post</span>',
-        '  <span style="color: var(--color-terminal-command)">github</span>        <span style="color: var(--color-terminal-muted)">- view my code</span>',
+        '  <span style="color: var(--color-terminal-command)">home</span>               <span style="color: var(--color-terminal-muted)">- go to home page</span>',
+        '  <span style="color: var(--color-terminal-command)">journal</span>            <span style="color: var(--color-terminal-muted)">- read my writing</span>',
+        '  <span style="color: var(--color-terminal-command)">journal &lt;slug&gt;</span>    <span style="color: var(--color-terminal-muted)">- read a blog post</span>',
+        '  <span style="color: var(--color-terminal-command)">github</span>             <span style="color: var(--color-terminal-muted)">- view my code</span>',
         '  <span style="color: var(--color-terminal-command)">linkedin</span>      <span style="color: var(--color-terminal-muted)">- connect with me</span>',
         '  <span style="color: var(--color-terminal-command)">clear</span>         <span style="color: var(--color-terminal-muted)">- clear terminal output</span>',
       ].join('\n');
@@ -177,14 +177,14 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
       return;
     }
 
-    // Check for cat command
-    if (cmd.startsWith('cat ')) {
-      const slug = cmd.slice(4).trim().replace(/^journal\//, '').replace(/\.mdx$/, '');
+    // Check for journal <slug> command
+    if (lower.startsWith('journal ')) {
+      const slug = lower.slice(8).trim().replace(/^journal\//, '').replace(/\.mdx$/, '');
       if (slugs.includes(slug)) {
         window.location.href = `/journal/${slug}`;
         return;
       }
-      addOutput(`<span style="color: var(--color-terminal-red)">cat: ${slug}: No such file</span>`);
+      addOutput(`<span style="color: var(--color-terminal-red)">journal: ${slug}: No such entry</span>`);
       return;
     }
 
@@ -267,7 +267,7 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
   });
 
   // Tab completion
-  const completableCommands = ['help', 'home', 'journal', 'github', 'linkedin', 'clear', 'whoami', 'ls', 'cat', 'cd'];
+  const completableCommands = ['help', 'home', 'journal', 'github', 'linkedin', 'clear', 'whoami', 'ls', 'cd'];
 
   function getCompletions(text) {
     const parts = text.split(/\s+/);
@@ -280,26 +280,16 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
         .map(c => c);
     }
 
-    // Complete arguments for cat, cd
-    if ((cmd === 'cat' || cmd === 'cd') && parts.length === 2) {
+    // Complete arguments for journal, cd
+    if ((cmd === 'journal' || cmd === 'cd') && parts.length === 2) {
       const arg = parts[1];
-
-      // cat journal/<partial> — complete slug names with the prefix intact
-      if (cmd === 'cat' && arg.startsWith('journal/')) {
-        const partial = arg.slice('journal/'.length);
-        return slugs
-          .filter(s => s.startsWith(partial))
-          .map(s => 'journal/' + s + '.mdx')
-          .filter(c => c !== arg);
-      }
 
       let candidates = [];
 
-      if (currentPage === 'home') {
-        candidates = cmd === 'cat' ? ['journal/'] : ['journal', '~', '..'];
-      } else {
+      if (cmd === 'journal') {
         candidates = slugs.map(s => s + '.mdx');
-        if (cmd === 'cd') candidates = ['..', '~', ...slugs];
+      } else {
+        candidates = currentPage === 'home' ? ['journal', '~', '..'] : ['..', '~', ...slugs];
       }
 
       return candidates.filter(c => c.startsWith(arg) && c !== arg);

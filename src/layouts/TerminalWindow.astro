@@ -7,10 +7,11 @@ interface Props {
   description?: string;
   date?: string;
   path?: string;
+  vimMode?: boolean;
 }
 
 const isProd = import.meta.env.PROD;
-const { title, description, date, path = "~" } = Astro.props;
+const { title, description, date, path = "~", vimMode = false } = Astro.props;
 const isArticle = !!date;
 ---
 
@@ -59,14 +60,19 @@ const isArticle = !!date;
       )
     }
   </head>
-  <body class="bg-[var(--color-terminal-bg)] font-mono text-[var(--color-terminal-text)] min-h-svh flex flex-col">
-    <div class="flex-1 flex flex-col max-w-5xl w-full px-8 sm:px-12 lg:px-24">
-      <!-- Terminal Content -->
-      <main class="flex-1 pt-8 pb-16">
+  <body class={`bg-[var(--color-terminal-bg)] font-mono text-[var(--color-terminal-text)] flex flex-col ${vimMode ? 'md:h-svh md:overflow-hidden min-h-svh' : 'min-h-svh'}`}>
+    {vimMode ? (
+      <main class="flex-1 flex flex-col min-h-0">
         <slot />
       </main>
-    </div>
+    ) : (
+      <div class="flex-1 flex flex-col max-w-5xl w-full px-8 sm:px-12 lg:px-24">
+        <main class="flex-1 pt-8 pb-16">
+          <slot />
+        </main>
+      </div>
+    )}
 
-    <StatusBar />
+    {!vimMode && <StatusBar />}
   </body>
 </html>

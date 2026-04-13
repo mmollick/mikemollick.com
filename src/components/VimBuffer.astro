@@ -1,0 +1,594 @@
+---
+interface SlugEntry {
+  slug: string;
+  date: string;
+  title: string;
+}
+
+interface Props {
+  mode: "directory" | "file";
+  filename: string;
+  path: string;
+  slugs?: SlugEntry[];
+}
+
+const { mode, filename, path, slugs = [] } = Astro.props;
+
+// Directory mode header lines
+const dirHeader = [
+  `" ============================================================`,
+  `"   ${path}`,
+  `" ============================================================`,
+  `"`,
+];
+---
+
+<!-- Desktop: vim buffer -->
+<div id="vim-desktop" class="hidden md:flex flex-col h-full min-h-0 relative">
+
+  {mode === "directory" && (
+    <div
+      id="vim-buffer"
+      class="flex-1 overflow-y-auto font-mono text-sm leading-6 outline-none"
+      tabindex="0"
+    >
+      {dirHeader.map((line, i) => (
+        <div class="vim-line flex">
+          <span class="vim-gutter select-none text-right pr-3 min-w-[2.5rem] shrink-0 text-[var(--color-terminal-muted)]">{i + 1}</span>
+          <span class="vim-content text-[var(--color-terminal-muted)]">{line}</span>
+        </div>
+      ))}
+      {/* blank line between header and entries */}
+      <div class="vim-line flex">
+        <span class="vim-gutter select-none text-right pr-3 min-w-[2.5rem] shrink-0 text-[var(--color-terminal-muted)]">{dirHeader.length + 1}</span>
+        <span class="vim-content"></span>
+      </div>
+      {slugs.map((entry, i) => (
+        <div class={`vim-line flex vim-entry ${i === 0 ? 'vim-cursor' : ''}`} data-slug={entry.slug}>
+          <span class="vim-gutter select-none text-right pr-3 min-w-[2.5rem] shrink-0 text-[var(--color-terminal-muted)]">{dirHeader.length + 2 + i}</span>
+          <span class="vim-content">
+            <a href={`/journal/${entry.slug}`} class="text-[var(--color-terminal-command)] hover:underline">
+              {entry.slug}.mdx
+            </a>
+            <span class="text-[var(--color-terminal-muted)] ml-4 text-xs">{entry.date}</span>
+          </span>
+        </div>
+      ))}
+      <div id="vim-tildes"></div>
+    </div>
+  )}
+
+  {mode === "file" && (
+    <>
+      {/* Hidden raw content — JS will extract and line-number this */}
+      <div id="vim-content-raw" class="hidden prose prose-invert">
+        <slot />
+      </div>
+      {/* JS-populated buffer */}
+      <div
+        id="vim-buffer"
+        class="flex-1 overflow-y-auto font-mono leading-7 pt-4 outline-none"
+        tabindex="0"
+      ></div>
+    </>
+  )}
+
+  {/* Vim status bar */}
+  <div
+    id="vim-statusline"
+    class="shrink-0 h-6 bg-[var(--color-terminal-prompt)] text-[var(--color-terminal-bg)] font-mono text-xs flex items-center px-3 justify-between z-50 select-none"
+  >
+    <span id="vim-sl-left" class="font-semibold">{filename}</span>
+    <span id="vim-sl-right">1,1</span>
+  </div>
+
+  {/* Ex command bar — overlays status bar when active */}
+  <div
+    id="vim-ex-bar"
+    class="hidden shrink-0 h-6 bg-[var(--color-terminal-bg)] border-t border-[var(--color-terminal-border)] font-mono text-xs flex items-center px-2 z-[60]"
+  >
+    <span id="vim-ex-prefix" class="text-[var(--color-terminal-text)] mr-0.5">:</span>
+    <input
+      id="vim-ex-input"
+      type="text"
+      class="bg-transparent border-none outline-none text-[var(--color-terminal-text)] font-mono text-xs flex-1 caret-[var(--color-terminal-text)]"
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+    />
+  </div>
+</div>
+
+<!-- Mobile: regular slot content -->
+<div id="vim-mobile" class="block md:hidden">
+  <slot name="mobile" />
+</div>
+
+<script is:inline define:vars={{ mode, filename, path }}>
+  const desktop = document.getElementById('vim-desktop');
+  const buffer = document.getElementById('vim-buffer');
+  const statusRight = document.getElementById('vim-sl-right');
+  const statusLeft = document.getElementById('vim-sl-left');
+  const exBar = document.getElementById('vim-ex-bar');
+  const exInput = document.getElementById('vim-ex-input');
+  const statusLine = document.getElementById('vim-statusline');
+
+  if (!buffer) return; // mobile — nothing to do
+
+  // ── FILE MODE: extract lines from raw content ─────────────────────────
+  if (mode === 'file') {
+    const raw = document.getElementById('vim-content-raw');
+    if (!raw) return;
+
+    // Collect logical lines from rendered MDX
+    const lineNodes = [];
+    for (const child of raw.children) {
+      const tag = child.tagName;
+      if (tag === 'UL' || tag === 'OL') {
+        for (const li of child.children) {
+          lineNodes.push({ node: li, type: 'li' });
+        }
+      } else {
+        lineNodes.push({ node: child, type: tag.toLowerCase() });
+      }
+    }
+
+    // Build line rows with blank spacer lines between blocks
+    let lineNum = 1;
+
+    function addBlankLine() {
+      const blank = document.createElement('div');
+      blank.className = 'vim-line vim-blank flex';
+      blank.innerHTML = `<span class="vim-gutter select-none text-right pr-4 min-w-[3rem] shrink-0 text-[var(--color-terminal-muted)] text-sm leading-loose">${lineNum++}</span><span class="vim-content leading-loose text-base">&nbsp;</span>`;
+      buffer.appendChild(blank);
+    }
+
+    lineNodes.forEach(({ node, type }, i) => {
+      const row = document.createElement('div');
+      row.className = 'vim-line flex items-start gap-0';
+
+      const gutter = document.createElement('span');
+      gutter.className = 'vim-gutter select-none text-right pr-4 min-w-[3rem] shrink-0 text-[var(--color-terminal-muted)] text-sm pt-[0.35em]';
+      gutter.textContent = String(lineNum++);
+
+      const content = document.createElement('div');
+      content.className = 'vim-content min-w-0 prose prose-invert leading-loose text-base !max-w-[120ch]';
+
+      if (type === 'li') {
+        // Wrap in a list so the bullet/number renders correctly
+        const wrapper = document.createElement('ul');
+        wrapper.className = 'my-0 pl-5';
+        wrapper.appendChild(node.cloneNode(true));
+        content.appendChild(wrapper);
+      } else {
+        content.appendChild(node.cloneNode(true));
+      }
+
+      row.appendChild(gutter);
+      row.appendChild(content);
+      buffer.appendChild(row);
+
+      // Blank line after blocks, but not between consecutive list items
+      const nextType = lineNodes[i + 1]?.type;
+      const isLastInListRun = type === 'li' && nextType !== 'li';
+      if (type !== 'li' || isLastInListRun) {
+        addBlankLine();
+      }
+    });
+
+    // Update status with total line count
+    const totalLines = lineNodes.length;
+    statusLeft.textContent = `${filename}  [${totalLines}L]`;
+  }
+
+  // ── TILDE FILLING ─────────────────────────────────────────────────────
+  // For file mode, vim-tildes is created lazily; directory mode has it in HTML.
+  let tildesContainer = document.getElementById('vim-tildes');
+  if (!tildesContainer) {
+    tildesContainer = document.createElement('div');
+    tildesContainer.id = 'vim-tildes';
+    buffer.appendChild(tildesContainer);
+  }
+
+  function fillTildes() {
+    tildesContainer.innerHTML = '';
+
+    const firstLine = buffer.querySelector('.vim-line:not(.vim-tilde)');
+    if (!firstLine) return;
+    const lineH = firstLine.getBoundingClientRect().height || 24;
+    const viewH = buffer.clientHeight;
+
+    // Use the last non-tilde line's offset to find where content actually ends
+    const allLines = buffer.querySelectorAll('.vim-line:not(.vim-tilde)');
+    const lastLine = allLines[allLines.length - 1];
+    const contentEnd = lastLine ? lastLine.offsetTop + lastLine.offsetHeight : 0;
+
+    const emptyPx = Math.max(0, viewH - contentEnd);
+    const tildeCount = Math.floor(emptyPx / lineH);
+
+    // If content fits, use overflow:hidden so tildes don't cause scroll
+    if (contentEnd <= viewH) {
+      buffer.style.overflowY = 'hidden';
+    } else {
+      buffer.style.overflowY = 'auto';
+    }
+
+    for (let i = 0; i < tildeCount; i++) {
+      const row = document.createElement('div');
+      row.className = 'vim-line vim-tilde flex';
+      row.setAttribute('aria-hidden', 'true');
+      row.innerHTML = `<span class="vim-gutter select-none text-right pr-3 min-w-[2.5rem] shrink-0"></span><span class="vim-content text-[var(--color-terminal-muted)]">~</span>`;
+      tildesContainer.appendChild(row);
+    }
+  }
+
+  // Run after a tick so layout is computed
+  setTimeout(fillTildes, 50);
+  new ResizeObserver(fillTildes).observe(buffer);
+
+  // ── POSITION TRACKING ─────────────────────────────────────────────────
+  function updatePosition() {
+    const firstLine = buffer.querySelector('.vim-line');
+    const lineH = firstLine ? firstLine.getBoundingClientRect().height : 24;
+    const line = Math.floor(buffer.scrollTop / lineH) + 1;
+    if (statusRight) statusRight.textContent = `${line},1`;
+  }
+
+  buffer.addEventListener('scroll', updatePosition);
+
+  // ── KEYBINDINGS ───────────────────────────────────────────────────────
+  let exMode = false;
+  let searchMode = false;
+  let lastGTime = 0;
+  const exPrefix = document.getElementById('vim-ex-prefix');
+
+  function lineHeight() {
+    const first = buffer.querySelector('.vim-line');
+    return first ? first.getBoundingClientRect().height : 24;
+  }
+
+  function scroll(lines) {
+    buffer.scrollTop += lines * lineHeight();
+    updatePosition();
+  }
+
+  function scrollHalf(dir) {
+    const visible = Math.floor(buffer.clientHeight / lineHeight());
+    scroll(dir * Math.max(1, Math.floor(visible / 2)));
+  }
+
+  function openEx() {
+    exMode = true;
+    searchMode = false;
+    exPrefix.textContent = ':';
+    exBar.classList.remove('hidden');
+    statusLine.classList.add('hidden');
+    exInput.value = '';
+    exInput.focus();
+  }
+
+  function openSearch() {
+    searchMode = true;
+    exMode = false;
+    exPrefix.textContent = '/';
+    exBar.classList.remove('hidden');
+    statusLine.classList.add('hidden');
+    exInput.value = '';
+    exInput.focus();
+  }
+
+  function closeEx() {
+    exMode = false;
+    searchMode = false;
+    exBar.classList.add('hidden');
+    statusLine.classList.remove('hidden');
+    buffer.focus();
+  }
+
+  // Ex input handling
+  exInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (searchMode) clearSearch();
+      closeEx();
+      return;
+    }
+    if (e.key === 'Enter') {
+      if (searchMode) {
+        closeEx();
+        return;
+      }
+      const cmd = exInput.value.trim();
+      if (cmd === 'q' || cmd === 'quit') {
+        window.location.href = '/';
+      } else if (cmd) {
+        statusLeft.textContent = `E492: Not an editor command: ${cmd}`;
+        setTimeout(() => { statusLeft.textContent = filename; }, 2000);
+        closeEx();
+      } else {
+        closeEx();
+      }
+    }
+  });
+
+  // ── SEARCH STATE (file mode) ──────────────────────────────────────────
+  let searchMatches = []; // array of .vim-line elements with matches
+  let searchMatchIdx = 0;
+
+  function applyFileSearch(query) {
+    // Clear previous highlights
+    buffer.querySelectorAll('.vim-search-highlight').forEach(el => {
+      el.outerHTML = el.textContent;
+    });
+    buffer.querySelectorAll('.vim-line').forEach(el => el.classList.remove('vim-search-match'));
+    searchMatches = [];
+
+    if (!query) {
+      statusLeft.textContent = filename;
+      return;
+    }
+
+    const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+
+    buffer.querySelectorAll('.vim-line:not(.vim-blank):not(.vim-tilde)').forEach(line => {
+      const content = line.querySelector('.vim-content');
+      if (!content) return;
+      const text = content.textContent;
+      if (re.test(text)) {
+        searchMatches.push(line);
+        line.classList.add('vim-search-match');
+        // Highlight within text nodes
+        highlightMatches(content, re);
+      }
+      re.lastIndex = 0;
+    });
+
+    if (searchMatches.length > 0) {
+      searchMatchIdx = 0;
+      jumpToMatch(0);
+      statusLeft.textContent = `${filename}  [${searchMatchIdx + 1}/${searchMatches.length}]`;
+    } else {
+      statusLeft.textContent = `Pattern not found: ${query}`;
+      setTimeout(() => { statusLeft.textContent = filename; }, 2000);
+    }
+  }
+
+  function highlightMatches(el, re) {
+    // Walk text nodes and wrap matches in <mark>
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) nodes.push(node);
+    nodes.forEach(textNode => {
+      const val = textNode.nodeValue;
+      re.lastIndex = 0;
+      if (!re.test(val)) return;
+      re.lastIndex = 0;
+      const frag = document.createDocumentFragment();
+      let last = 0, m;
+      while ((m = re.exec(val)) !== null) {
+        if (m.index > last) frag.appendChild(document.createTextNode(val.slice(last, m.index)));
+        const mark = document.createElement('mark');
+        mark.className = 'vim-search-highlight';
+        mark.textContent = m[0];
+        frag.appendChild(mark);
+        last = m.index + m[0].length;
+      }
+      if (last < val.length) frag.appendChild(document.createTextNode(val.slice(last)));
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+  }
+
+  function jumpToMatch(idx) {
+    buffer.querySelectorAll('.vim-line').forEach(el => el.classList.remove('vim-search-current'));
+    if (!searchMatches[idx]) return;
+    searchMatches[idx].classList.add('vim-search-current');
+    searchMatches[idx].scrollIntoView({ block: 'center' });
+    updatePosition();
+  }
+
+  function clearSearch() {
+    if (mode === 'directory') {
+      buffer.querySelectorAll('.vim-entry').forEach(el => el.style.display = '');
+    }
+    if (mode === 'file') {
+      buffer.querySelectorAll('.vim-search-highlight').forEach(mark => {
+        const parent = mark.parentNode;
+        parent.replaceChild(document.createTextNode(mark.textContent), mark);
+        parent.normalize();
+      });
+      buffer.querySelectorAll('.vim-line').forEach(el => {
+        el.classList.remove('vim-search-match', 'vim-search-current');
+      });
+      searchMatches = [];
+      statusLeft.textContent = filename;
+    }
+  }
+
+  // Live search input handler
+  exInput.addEventListener('input', () => {
+    if (!searchMode) return;
+    if (mode === 'file') {
+      applyFileSearch(exInput.value);
+    }
+  });
+
+  // Main keybindings
+  document.addEventListener('keydown', (e) => {
+    if (exMode) return;
+    if (e.target && e.target.tagName === 'INPUT') return;
+
+    switch (e.key) {
+      case 'j':
+        e.preventDefault();
+        scroll(1);
+        break;
+      case 'k':
+        e.preventDefault();
+        scroll(-1);
+        break;
+      case 'd':
+        if (e.ctrlKey) { e.preventDefault(); scrollHalf(1); }
+        break;
+      case 'u':
+        if (e.ctrlKey) { e.preventDefault(); scrollHalf(-1); }
+        break;
+      case 'D':
+        e.preventDefault();
+        scrollHalf(1);
+        break;
+      case 'U':
+        e.preventDefault();
+        scrollHalf(-1);
+        break;
+      case 'G':
+        e.preventDefault();
+        buffer.scrollTop = buffer.scrollHeight;
+        updatePosition();
+        break;
+      case 'g': {
+        const now = Date.now();
+        if (now - lastGTime < 500) {
+          buffer.scrollTop = 0;
+          updatePosition();
+          lastGTime = 0;
+        } else {
+          lastGTime = now;
+        }
+        break;
+      }
+      case ':':
+        e.preventDefault();
+        openEx();
+        break;
+      case '/':
+        e.preventDefault();
+        openSearch();
+        break;
+      case 'n':
+        if (mode === 'file' && searchMatches.length > 0) {
+          e.preventDefault();
+          searchMatchIdx = (searchMatchIdx + 1) % searchMatches.length;
+          jumpToMatch(searchMatchIdx);
+          statusLeft.textContent = `${filename}  [${searchMatchIdx + 1}/${searchMatches.length}]`;
+        }
+        break;
+      case 'N':
+        if (mode === 'file' && searchMatches.length > 0) {
+          e.preventDefault();
+          searchMatchIdx = (searchMatchIdx - 1 + searchMatches.length) % searchMatches.length;
+          jumpToMatch(searchMatchIdx);
+          statusLeft.textContent = `${filename}  [${searchMatchIdx + 1}/${searchMatches.length}]`;
+        }
+        break;
+      case 'w':
+        e.preventDefault();
+        buffer.classList.toggle('vim-nowrap');
+        fillTildes();
+        break;
+      case 'q':
+        window.location.href = '/';
+        break;
+    }
+  });
+
+  // Focus buffer on load so keybindings work immediately
+  buffer.focus();
+
+  // ── DIRECTORY MODE: cursor highlight ──────────────────────────────────
+  if (mode === 'directory') {
+    const entries = buffer.querySelectorAll('.vim-entry');
+    let cursorIdx = 0;
+
+    function setCursor(idx) {
+      entries.forEach(el => el.classList.remove('vim-cursor'));
+      if (entries[idx]) {
+        entries[idx].classList.add('vim-cursor');
+        entries[idx].scrollIntoView({ block: 'nearest' });
+      }
+      cursorIdx = idx;
+    }
+
+    setCursor(0);
+
+    // Live search filtering
+    exInput.addEventListener('input', () => {
+      if (!searchMode) return;
+      const query = exInput.value.toLowerCase();
+      let firstVisible = -1;
+      entries.forEach((el, idx) => {
+        const slug = el.dataset.slug || '';
+        const matches = !query || slug.toLowerCase().includes(query);
+        el.style.display = matches ? '' : 'none';
+        if (matches && firstVisible === -1) firstVisible = idx;
+      });
+      if (firstVisible !== -1) setCursor(firstVisible);
+    });
+
+    // j/k/ArrowDown/ArrowUp move cursor in directory mode
+    function nextVisible(from, dir) {
+      let i = from + dir;
+      while (i >= 0 && i < entries.length) {
+        if (entries[i].style.display !== 'none') return i;
+        i += dir;
+      }
+      return -1;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (exMode || searchMode) return;
+      if (e.target && e.target.tagName === 'INPUT') return;
+      const down = e.key === 'j' || e.key === 'ArrowDown';
+      const up = e.key === 'k' || e.key === 'ArrowUp';
+      if (down) { const n = nextVisible(cursorIdx, 1); if (n !== -1) { e.preventDefault(); setCursor(n); } }
+      if (up) { const n = nextVisible(cursorIdx, -1); if (n !== -1) { e.preventDefault(); setCursor(n); } }
+      if (e.key === 'Enter') {
+        const slug = entries[cursorIdx]?.dataset.slug;
+        if (slug) window.location.href = `/journal/${slug}`;
+      }
+    });
+  }
+</script>
+
+<style is:inline>
+  .vim-cursor .vim-content {
+    background-color: rgba(230, 237, 243, 0.1);
+  }
+  .vim-cursor .vim-gutter {
+    color: var(--color-terminal-text) !important;
+  }
+  #vim-buffer:focus {
+    outline: none;
+  }
+  #vim-buffer.vim-nowrap {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  #vim-buffer.vim-nowrap .vim-content,
+  #vim-buffer.vim-nowrap .vim-content * {
+    white-space: nowrap;
+  }
+  mark.vim-search-highlight {
+    background-color: rgba(215, 186, 125, 0.35);
+    color: inherit;
+    border-radius: 2px;
+  }
+  .vim-search-current mark.vim-search-highlight {
+    background-color: rgba(215, 186, 125, 0.7);
+  }
+  /* Prose overrides inside vim lines */
+  .vim-content.prose h1,
+  .vim-content.prose h2,
+  .vim-content.prose h3 {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+  .vim-content.prose p {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  .vim-content.prose pre {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+</style>
