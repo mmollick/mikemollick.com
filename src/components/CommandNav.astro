@@ -33,13 +33,13 @@ const { commands = defaultCommands } = Astro.props;
           target={cmd.external ? "_blank" : undefined}
           rel={cmd.external ? "noopener" : undefined}
         >
-          <span class="text-[var(--color-terminal-command)]">{cmd.name.padEnd(14)}</span>
+          <span class="text-[var(--color-terminal-link)]">{cmd.name.padEnd(14)}</span>
           <span class="text-[var(--color-terminal-muted)]">- {cmd.description}</span>
           {cmd.external && <span class="text-[var(--color-terminal-muted)] opacity-0 group-hover:opacity-100 transition-opacity"> ↗</span>}
         </a>
       ) : (
         <div class="block px-2 py-0.5">
-          <span class="text-[var(--color-terminal-command)]">{cmd.name.padEnd(14)}</span>
+          <span class="text-[var(--color-terminal-muted)]">{cmd.name.padEnd(14)}</span>
           <span class="text-[var(--color-terminal-muted)]">- {cmd.description}</span>
         </div>
       )

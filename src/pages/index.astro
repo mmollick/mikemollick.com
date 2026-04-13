@@ -1,7 +1,5 @@
 ---
 import TerminalWindow from "../layouts/TerminalWindow.astro";
-import PromptLine from "../components/PromptLine.astro";
-import OutputBlock from "../components/OutputBlock.astro";
 import CommandNav from "../components/CommandNav.astro";
 import CommandInput from "../components/CommandInput.astro";
 import { getCollection } from "astro:content";
@@ -16,29 +14,73 @@ const slugs = entries.map((e) => e.slug);
   description="Mike Mollick is a Product Engineer and Founder who has worked in startups from pre-seed through IPO."
   path="~"
 >
-  <!-- whoami -->
-  <PromptLine command="whoami" />
-  <OutputBlock>
-    <div class="text-sm space-y-3 my-3">
-      <p class="text-[var(--color-terminal-text)]">
-        <span class="text-[var(--color-terminal-prompt)] font-semibold">Mike Mollick</span> — Product Engineer & Founder
-      </p>
-      <p class="text-[var(--color-terminal-text)]">
-        Building <a href="https://clarify.ai" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">Clarify</a>, the AI native CRM.
+  <!-- MOTD / login screen -->
+  <div class="text-sm space-y-1 my-4 font-mono">
+    <p class="text-[var(--color-terminal-text)]">
+      Welcome to mikemollick.com v2.0.0 LTS (Darwin 24.3.0 arm64)
+    </p>
+    <br />
+    <p class="text-[var(--color-terminal-muted)]">
+      &nbsp;* Documentation:  <a href="/journal" class="text-[var(--color-terminal-link)] hover:underline">/journal</a>
+    </p>
+    <p class="text-[var(--color-terminal-muted)]">
+      &nbsp;* Source:         <a href="https://github.com/mmollick" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">github.com/mmollick</a>
+    </p>
+    <p class="text-[var(--color-terminal-muted)]">
+      &nbsp;* Work:           <a href="https://clarify.ai" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">clarify.ai</a>
+    </p>
+    <p class="text-[var(--color-terminal-muted)]">
+      &nbsp;* Previously:     <a href="https://www.linkedin.com/company/syrupofficial/posts/?feedView=all" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">Syrup</a>,
+      <a href="https://www.ycombinator.com/companies/truepill" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">Truepill</a>,
+      <a href="https://zoominfo.com" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">ZoomInfo</a>,
+      <a href="https://neverbounce.com" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">NeverBounce</a>,
+      Creavos (Defunct),
+      <a href="https://www.theformgroup.com/" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">FORM</a>
+    </p>
+    <br />
+    <p class="text-[var(--color-terminal-muted)]">
+      System information as of {new Date().toDateString()}
+    </p>
+    <br />
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+      <p class="text-[var(--color-terminal-muted)]">
+        <span class="text-[var(--color-terminal-text)]">System load:</span>  0.42
       </p>
       <p class="text-[var(--color-terminal-muted)]">
-        Previously led engineering at <a href="https://www.linkedin.com/company/syrupofficial/posts/?feedView=all" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">Syrup</a> (defunct),
-        worked with <a href="https://www.ycombinator.com/companies/truepill" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">Truepill</a> (YC17),
-        <a href="https://zoominfo.com" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">ZoomInfo</a>,
-        and co-founded <a href="https://neverbounce.com" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">NeverBounce</a> (Acq. by ZoomInfo).
-        Got my start at the digital agencies Creavos (defunct) and <a href="https://www.theformgroup.com/" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">FORM</a>.
+        <span class="text-[var(--color-terminal-text)]">Processes:</span>     142
+      </p>
+      <p class="text-[var(--color-terminal-muted)]">
+        <span class="text-[var(--color-terminal-text)]">Usage of /:</span>    62.4% of 20GB
+      </p>
+      <p class="text-[var(--color-terminal-muted)]">
+        <span class="text-[var(--color-terminal-text)]">Users logged in:</span> 1
+      </p>
+      <p class="text-[var(--color-terminal-muted)]">
+        <span class="text-[var(--color-terminal-text)]">Memory usage:</span>  71%
+      </p>
+      <p class="text-[var(--color-terminal-muted)]">
+        <span class="text-[var(--color-terminal-text)]">IPv4:</span>          <span id="visitor-ip">...</span>
       </p>
     </div>
-  </OutputBlock>
+  </div>
 
-  <!-- help -->
-  <PromptLine command="help" />
-  <CommandNav />
+  <script>
+    fetch('https://api64.ipify.org?format=json')
+      .then(r => r.json())
+      .then(data => {
+        const ip = data.ip;
+        document.querySelectorAll('#visitor-ip, #visitor-ip-login').forEach(el => el.textContent = ip);
+      })
+      .catch(() => {
+        document.querySelectorAll('#visitor-ip, #visitor-ip-login').forEach(el => el.textContent = 'unknown');
+      });
+  </script>
+
+<CommandNav />
+
+  <p class="text-sm text-[var(--color-terminal-muted)] mt-2">
+    Last login: {new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toDateString()} from <span id="visitor-ip-login">...</span>
+  </p>
 
   <CommandInput path="~" slugs={slugs} currentPage="home" />
 </TerminalWindow>

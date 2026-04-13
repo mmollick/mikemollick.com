@@ -8,7 +8,7 @@ interface Props {
 const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
 ---
 
-<div id="command-input-container" class="mt-8 border-t border-[var(--color-terminal-border)] pt-4">
+<div id="command-input-container" class="mt-4">
   <div id="command-output" class="text-sm font-mono space-y-1 mb-2"></div>
   <div class="flex flex-wrap gap-x-2 font-mono text-sm items-center">
     <span id="command-prompt">
