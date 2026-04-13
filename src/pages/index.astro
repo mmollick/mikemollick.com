@@ -102,8 +102,17 @@ const statsDate = ccStats ? new Date(ccStats.asOf).toDateString() : new Date().t
 <CommandNav />
 
   <p class="text-sm text-[var(--color-terminal-muted)] mt-2">
-    Last login: {new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toDateString()}
+    Last login: <span id="last-login">now</span>
   </p>
+
+  <script>
+    const key = 'mikemollick_last_visit';
+    const prev = localStorage.getItem(key);
+    if (prev) {
+      document.getElementById('last-login').textContent = new Date(prev).toDateString();
+    }
+    localStorage.setItem(key, new Date().toISOString());
+  </script>
 
   <CommandInput path="~" slugs={slugs} currentPage="home" />
 </TerminalWindow>
