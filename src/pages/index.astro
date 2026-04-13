@@ -3,11 +3,17 @@ import TerminalWindow from "../layouts/TerminalWindow.astro";
 import CommandNav from "../components/CommandNav.astro";
 import CommandInput from "../components/CommandInput.astro";
 import { getCollection } from "astro:content";
+import { getCCStats, fmtTokens } from "../lib/cc-stats";
 
 const entries = await getCollection("blog", (entry) =>
   import.meta.env.PROD ? entry.data.isPublished : true,
 );
 const slugs = entries.map((e) => e.slug);
+const ccStats = getCCStats();
+const topModel = ccStats
+  ? Object.entries(ccStats.modelBreakdown).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—"
+  : null;
+const statsDate = ccStats ? new Date(ccStats.asOf).toDateString() : new Date().toDateString();
 ---
 
 <TerminalWindow
@@ -39,47 +45,64 @@ const slugs = entries.map((e) => e.slug);
     </p>
     <br />
     <p class="text-[var(--color-terminal-muted)]">
-      System information as of {new Date().toDateString()}
+      Claude Code usage as of {statsDate} (last 30 days)
     </p>
     <br />
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
-      <p class="text-[var(--color-terminal-muted)]">
-        <span class="text-[var(--color-terminal-text)]">System load:</span>  0.42
-      </p>
-      <p class="text-[var(--color-terminal-muted)]">
-        <span class="text-[var(--color-terminal-text)]">Processes:</span>     142
-      </p>
-      <p class="text-[var(--color-terminal-muted)]">
-        <span class="text-[var(--color-terminal-text)]">Usage of /:</span>    62.4% of 20GB
-      </p>
-      <p class="text-[var(--color-terminal-muted)]">
-        <span class="text-[var(--color-terminal-text)]">Users logged in:</span> 1
-      </p>
-      <p class="text-[var(--color-terminal-muted)]">
-        <span class="text-[var(--color-terminal-text)]">Memory usage:</span>  71%
-      </p>
-      <p class="text-[var(--color-terminal-muted)]">
-        <span class="text-[var(--color-terminal-text)]">IPv4:</span>          <span id="visitor-ip">...</span>
-      </p>
-    </div>
+    {ccStats ? (
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Sessions:</span>      {ccStats.totalSessions}
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Prompts:</span>       {ccStats.totalPrompts}
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Input tokens:</span>  {fmtTokens(ccStats.tokens.input)}
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Output tokens:</span> {fmtTokens(ccStats.tokens.output)}
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Cache read:</span>    {fmtTokens(ccStats.tokens.cache_read)}
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Cache created:</span> {fmtTokens(ccStats.tokens.cache_creation)}
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Top model:</span>     {topModel}
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Tool calls:</span>    {ccStats.totalToolCalls.toLocaleString()}
+        </p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">System load:</span>  0.42
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Processes:</span>     142
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Usage of /:</span>    62.4% of 20GB
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Users logged in:</span> 1
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">Memory usage:</span>  71%
+        </p>
+        <p class="text-[var(--color-terminal-muted)]">
+          <span class="text-[var(--color-terminal-text)]">IPv4:</span>          127.0.0.1
+        </p>
+      </div>
+    )}
   </div>
-
-  <script>
-    fetch('https://api64.ipify.org?format=json')
-      .then(r => r.json())
-      .then(data => {
-        const ip = data.ip;
-        document.querySelectorAll('#visitor-ip, #visitor-ip-login').forEach(el => el.textContent = ip);
-      })
-      .catch(() => {
-        document.querySelectorAll('#visitor-ip, #visitor-ip-login').forEach(el => el.textContent = 'unknown');
-      });
-  </script>
 
 <CommandNav />
 
   <p class="text-sm text-[var(--color-terminal-muted)] mt-2">
-    Last login: {new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toDateString()} from <span id="visitor-ip-login">...</span>
+    Last login: {new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toDateString()}
   </p>
 
   <CommandInput path="~" slugs={slugs} currentPage="home" />
