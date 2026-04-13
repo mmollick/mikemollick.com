@@ -126,13 +126,15 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  function addOutput(html) {
+  function addOutput(html, { indent = false } = {}) {
     for (const part of html.split('\n')) {
       const line = document.createElement('div');
       line.style.paddingTop = '0.125rem';
       line.style.paddingBottom = '0.125rem';
-      line.style.paddingLeft = '0.5rem';
-      line.style.paddingRight = '0.5rem';
+      if (indent) {
+        line.style.paddingLeft = '0.5rem';
+        line.style.paddingRight = '0.5rem';
+      }
       line.innerHTML = part;
       output.appendChild(line);
     }
@@ -239,6 +241,8 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
       if (result) {
         if (cmd.toLowerCase() === 'whoami') {
           addOutput(`<div style="padding-left: 1rem; border-left: 2px solid var(--color-terminal-border); margin: 0.5rem 0;"><div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.875rem;">${result.split('\n').map(l => `<p>${l}</p>`).join('')}</div></div>`);
+        } else if (cmd.toLowerCase() === 'help') {
+          addOutput(result, { indent: true });
         } else {
           addOutput(`<pre style="white-space: pre-wrap; margin: 0;">${result}</pre>`);
         }
