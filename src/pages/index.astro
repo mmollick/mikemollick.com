@@ -129,7 +129,7 @@ const heatmap = heatmapData ? buildHeatmapGrid(heatmapData) : null;
     const key = 'mikemollick_last_visit';
     const prev = localStorage.getItem(key);
     if (prev) {
-      document.getElementById('last-login').textContent = new Date(prev).toDateString();
+      document.getElementById('last-login')!.textContent = new Date(prev).toDateString();
     }
     localStorage.setItem(key, new Date().toISOString());
   </script>
