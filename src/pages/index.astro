@@ -13,9 +13,25 @@ const ccStats = getCCStats();
 const topModel = ccStats
   ? Object.entries(ccStats.modelBreakdown).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—"
   : null;
-const statsDate = ccStats ? new Date(ccStats.asOf).toDateString() : new Date().toDateString();
+const statsDate = ccStats ? new Date(ccStats.asOf).toDateString() : null;
 const heatmapData = getHeatmapData();
 const heatmap = heatmapData ? buildHeatmapGrid(heatmapData) : null;
+
+// Serialized for client-side stats command
+const statsPayload = ccStats ? {
+  sessions: ccStats.totalSessions,
+  prompts: ccStats.totalPrompts,
+  toolCalls: ccStats.totalToolCalls,
+  inputTokens: fmtTokens(ccStats.tokens.input),
+  outputTokens: fmtTokens(ccStats.tokens.output),
+  cacheRead: fmtTokens(ccStats.tokens.cache_read),
+  cacheCreated: fmtTokens(ccStats.tokens.cache_creation),
+  topModel: topModel ?? "—",
+  asOf: statsDate,
+} : null;
+
+// Serialize heatmap lines for client
+const heatmapPayload = heatmap ? heatmap.lines : null;
 ---
 
 <TerminalWindow
@@ -45,78 +61,6 @@ const heatmap = heatmapData ? buildHeatmapGrid(heatmapData) : null;
       Creavos (Defunct),
       <a href="https://www.theformgroup.com/" class="text-[var(--color-terminal-link)] hover:underline" target="_blank" rel="noopener">FORM</a>
     </p>
-    <br />
-    <p class="text-[var(--color-terminal-muted)]">
-      Claude Code usage as of {statsDate} (last 30 days)
-    </p>
-    <br />
-    {ccStats ? (
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Sessions:</span>      {ccStats.totalSessions}
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Prompts:</span>       {ccStats.totalPrompts}
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Input tokens:</span>  {fmtTokens(ccStats.tokens.input)}
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Output tokens:</span> {fmtTokens(ccStats.tokens.output)}
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Cache read:</span>    {fmtTokens(ccStats.tokens.cache_read)}
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Cache created:</span> {fmtTokens(ccStats.tokens.cache_creation)}
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Top model:</span>     {topModel}
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Tool calls:</span>    {ccStats.totalToolCalls.toLocaleString()}
-        </p>
-      </div>
-    ) : (
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">System load:</span>  0.42
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Processes:</span>     142
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Usage of /:</span>    62.4% of 20GB
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Users logged in:</span> 1
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">Memory usage:</span>  71%
-        </p>
-        <p class="text-[var(--color-terminal-muted)]">
-          <span class="text-[var(--color-terminal-text)]">IPv4:</span>          127.0.0.1
-        </p>
-      </div>
-    )}
-
-    {heatmap && (
-      <div class="mt-3 overflow-x-auto">
-        <br />
-        <pre class="text-xs font-mono whitespace-pre" style="line-height:1.2;letter-spacing:0">{heatmap.lines.map((segments, i) => (
-          <span>{segments.map(seg => (
-            <span class={
-              seg.style === "label"   ? "text-[var(--color-terminal-muted)]" :
-              seg.style === "dot"     ? "text-[#1e2d3d]" :
-              seg.style === "active1" ? "text-[#1e4a7a]" :
-              seg.style === "active2" ? "text-[#1a6bbf]" :
-              seg.style === "active3" ? "text-[#3b88e8]" :
-                                        "text-[var(--color-terminal-link)]"
-            }>{seg.text}</span>
-          ))}{i < heatmap.lines.length - 1 ? "\n" : ""}</span>
-        ))}</pre>
-      </div>
-    )}
   </div>
 
 <CommandNav />
@@ -134,5 +78,5 @@ const heatmap = heatmapData ? buildHeatmapGrid(heatmapData) : null;
     localStorage.setItem(key, new Date().toISOString());
   </script>
 
-  <CommandInput path="~" slugs={slugs} currentPage="home" />
+  <CommandInput path="~" slugs={slugs} currentPage="home" statsPayload={statsPayload} heatmapPayload={heatmapPayload} />
 </TerminalWindow>

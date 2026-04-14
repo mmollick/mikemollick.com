@@ -1,11 +1,28 @@
 ---
+interface StatsPayload {
+  sessions: number;
+  prompts: number;
+  toolCalls: number;
+  inputTokens: string;
+  outputTokens: string;
+  cacheRead: string;
+  cacheCreated: string;
+  topModel: string;
+  asOf: string | null;
+}
+
+type HeatmapSegment = { text: string; style: string };
+type HeatmapLine = HeatmapSegment[];
+
 interface Props {
   path?: string;
   slugs?: string[];
   currentPage?: "home" | "journal" | "post";
+  statsPayload?: StatsPayload | null;
+  heatmapPayload?: HeatmapLine[] | null;
 }
 
-const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
+const { path = "~", slugs = [], currentPage = "home", statsPayload = null, heatmapPayload = null } = Astro.props;
 ---
 
 <div id="command-input-container" class="mt-4">
@@ -28,7 +45,7 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
   <p class="text-xs text-[var(--color-terminal-muted)] mt-2 opacity-60">hint: type 'help' for available commands</p>
 </div>
 
-<script is:inline define:vars={{ slugs, path, currentPage }}>
+<script is:inline define:vars={{ slugs, path, currentPage, statsPayload, heatmapPayload }}>
   const input = document.getElementById('command-input');
   const output = document.getElementById('command-output');
   let awaitingSudoPassword = false;
@@ -61,6 +78,7 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
         '  <a href="https://github.com/mmollick" target="_blank" rel="noopener" style="color: var(--color-terminal-link)">github</a> <span style="color: var(--color-terminal-muted)">- view my code</span>',
         '  <a href="https://www.linkedin.com/in/michaelmollick" target="_blank" rel="noopener" style="color: var(--color-terminal-link)">linkedin</a> <span style="color: var(--color-terminal-muted)">- connect with me</span>',
         '  <span style="color: var(--color-terminal-muted)">clear - clear terminal output</span>',
+        '  <span style="color: var(--color-terminal-muted)">stats - show Claude Code usage stats</span>',
       ].join('\n');
     },
     home: () => { window.location.href = '/'; return null; },
@@ -81,7 +99,46 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
       'Building <a href="https://clarify.ai" style="color: var(--color-terminal-link);" target="_blank" rel="noopener">Clarify</a>, the AI native CRM.',
       '<span style="color: var(--color-terminal-muted)">Previously led engineering at <a href="https://www.linkedin.com/company/syrupofficial/posts/?feedView=all" style="color: var(--color-terminal-link);" target="_blank" rel="noopener">Syrup</a> (defunct), worked with <a href="https://www.ycombinator.com/companies/truepill" style="color: var(--color-terminal-link);" target="_blank" rel="noopener">Truepill</a> (YC17), <a href="https://zoominfo.com" style="color: var(--color-terminal-link);" target="_blank" rel="noopener">ZoomInfo</a>, and co-founded <a href="https://neverbounce.com" style="color: var(--color-terminal-link);" target="_blank" rel="noopener">NeverBounce</a> (Acq. by ZoomInfo). Got my start at the digital agencies Creavos (defunct) and <a href="https://www.theformgroup.com/" style="color: var(--color-terminal-link);" target="_blank" rel="noopener">FORM</a>.</span>',
     ].join('\n'),
+    stats: () => {
+      if (!statsPayload) {
+        return '<span style="color: var(--color-terminal-muted)">No stats available.</span>';
+      }
+      const s = statsPayload;
+      const asOf = s.asOf ? ' (as of ' + s.asOf + ')' : '';
+      const rows = [
+        '<span style="color: var(--color-terminal-muted)">Claude Code usage — last 30 days' + asOf + '</span>',
+        '',
+        padCol('Sessions:', String(s.sessions), 14, 16) + '  ' + padCol('Prompts:', String(s.prompts), 16, 0),
+        padCol('Input tokens:', s.inputTokens, 14, 16) + '  ' + padCol('Output tokens:', s.outputTokens, 16, 0),
+        padCol('Cache read:', s.cacheRead, 14, 16) + '  ' + padCol('Cache created:', s.cacheCreated, 16, 0),
+        padCol('Top model:', s.topModel, 14, 16) + '  ' + padCol('Tool calls:', s.toolCalls.toLocaleString(), 16, 0),
+      ];
+      if (heatmapPayload) {
+        rows.push('');
+        for (const segments of heatmapPayload) {
+          let line = '';
+          for (const seg of segments) {
+            const color =
+              seg.style === 'label'   ? 'var(--color-terminal-muted)' :
+              seg.style === 'dot'     ? '#1e2d3d' :
+              seg.style === 'active1' ? '#1e4a7a' :
+              seg.style === 'active2' ? '#1a6bbf' :
+              seg.style === 'active3' ? '#3b88e8' :
+                                        'var(--color-terminal-link)';
+            line += '<span style="color:' + color + '">' + seg.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>';
+          }
+          rows.push(line);
+        }
+      }
+      return rows.join('\n');
+    },
   };
+
+  function padCol(label, value, labelWidth, valueWidth) {
+    const paddedLabel = (label + ' ').padEnd(labelWidth);
+    const paddedValue = valueWidth > 0 ? value.padEnd(valueWidth) : value;
+    return '<span style="color:var(--color-terminal-text)">' + paddedLabel + '</span><span style="color:var(--color-terminal-muted)">' + paddedValue + '</span>';
+  }
 
   const promptEl = document.getElementById('command-prompt');
 
@@ -237,6 +294,11 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
       if (result) {
         if (cmd.toLowerCase() === 'whoami') {
           addOutput(`<div style="padding-left: 1rem; border-left: 2px solid var(--color-terminal-border); margin: 0.5rem 0;"><div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.875rem;">${result.split('\n').map(l => `<p>${l}</p>`).join('')}</div></div>`);
+        } else if (cmd.toLowerCase() === 'stats') {
+          const el = document.createElement('div');
+          el.style.margin = '0.25rem 0';
+          el.innerHTML = `<pre style="white-space: pre; margin: 0; font-size: 0.75rem; line-height: 1.2; letter-spacing: 0;">${result}</pre>`;
+          output.appendChild(el);
         } else {
           addOutput(`<pre style="white-space: pre-wrap; margin: 0;">${result}</pre>`);
         }
@@ -275,7 +337,7 @@ const { path = "~", slugs = [], currentPage = "home" } = Astro.props;
   });
 
   // Tab completion
-  const completableCommands = ['help', 'home', 'journal', 'github', 'linkedin', 'clear', 'whoami', 'ls', 'cd'];
+  const completableCommands = ['help', 'home', 'journal', 'github', 'linkedin', 'clear', 'whoami', 'ls', 'cd', 'stats'];
 
   function getCompletions(text) {
     const parts = text.split(/\s+/);
