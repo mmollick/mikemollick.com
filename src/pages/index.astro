@@ -8,7 +8,7 @@ import { getCCStats, fmtTokens, getHeatmapData, buildHeatmapGrid } from "../lib/
 const entries = await getCollection("blog", (entry) =>
   import.meta.env.PROD ? entry.data.isPublished : true,
 );
-const slugs = entries.map((e) => e.slug);
+const slugs = entries.map((e) => e.id);
 const ccStats = getCCStats();
 const topModel = ccStats
   ? Object.entries(ccStats.modelBreakdown).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—"

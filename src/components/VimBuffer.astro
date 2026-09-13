@@ -105,6 +105,7 @@ const dirHeader = [
 </div>
 
 <script is:inline define:vars={{ mode, filename }}>
+(function () {
   const buffer = document.getElementById('vim-buffer');
   const statusRight = document.getElementById('vim-sl-right');
   const statusLeft = document.getElementById('vim-sl-left');
@@ -546,6 +547,7 @@ const dirHeader = [
       }
     });
   }
+})();
 </script>
 
 <style is:inline>

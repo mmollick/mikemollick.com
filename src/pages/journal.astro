@@ -19,7 +19,7 @@ function formatDate(date: Date): string {
 }
 
 const slugEntries = sortedEntries.map((e) => ({
-  slug: e.slug,
+  slug: e.id,
   date: formatDate(e.data.date),
   title: e.data.title,
 }));
@@ -56,17 +56,17 @@ const slugEntries = sortedEntries.map((e) => ({
                 <span class="shrink-0 text-[var(--color-terminal-muted)]">guest mikemollick.com</span>
                 <span class="shrink-0 text-[var(--color-terminal-amber)]">{formatDate(entry.data.date)}</span>
                 <a
-                  href={`/journal/${entry.slug}`}
+                  href={`/journal/${entry.id}`}
                   class="text-[var(--color-terminal-command)] hover:underline truncate"
                 >
-                  {entry.slug}.mdx
+                  {entry.id}.mdx
                 </a>
               </div>
             ))}
           </div>
         </div>
       </OutputBlock>
-      <CommandInput path="~/journal" slugs={sortedEntries.map((e) => e.slug)} currentPage="journal" />
+      <CommandInput path="~/journal" slugs={sortedEntries.map((e) => e.id)} currentPage="journal" />
     </div>
   </VimBuffer>
 </TerminalWindow>
