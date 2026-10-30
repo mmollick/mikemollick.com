@@ -11,7 +11,7 @@ interface Props {
 }
 
 const isProd = import.meta.env.PROD;
-const { title, description, date, path = "~", vimMode = false } = Astro.props;
+const { title, description, date, vimMode = false } = Astro.props;
 const isArticle = !!date;
 ---
 
