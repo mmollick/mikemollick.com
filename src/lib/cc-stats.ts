@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
-import { fileURLToPath } from "url";
-import { join, dirname } from "path";
+import { join } from "path";
+
+const STATS_PATH = join(process.cwd(), "data/claude-stats/session-stats.jsonl");
 
 export interface CCStats {
   totalSessions: number;
@@ -50,9 +51,7 @@ export function fmtTokens(n: number): string {
 
 export function getCCStats(): CCStats | null {
   try {
-    const __dirname = dirname(fileURLToPath(import.meta.url));
-    const filePath = join(__dirname, "../../data/claude-stats/session-stats.jsonl");
-    const raw = readFileSync(filePath, "utf-8");
+    const raw = readFileSync(STATS_PATH, "utf-8");
 
     // Parse all lines, keep latest snapshot per session_id
     const latest = new Map<string, SessionRecord>();
@@ -109,9 +108,7 @@ export function getCCStats(): CCStats | null {
 
 export function getHeatmapData(): HeatmapData | null {
   try {
-    const __dirname = dirname(fileURLToPath(import.meta.url));
-    const filePath = join(__dirname, "../../data/claude-stats/session-stats.jsonl");
-    const raw = readFileSync(filePath, "utf-8");
+    const raw = readFileSync(STATS_PATH, "utf-8");
 
     // Deduplicate: keep latest snapshot per session
     const latest = new Map<string, SessionRecord>();
